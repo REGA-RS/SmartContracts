@@ -48,7 +48,7 @@ contract PreICOToken is ERC20Token {
   }
 
   function() payable opened {
-      issueInternal( msg.sender, msg.value );
+      issueInternal( msg.sender, msg.value, true );
   }
 
   function setNotMoreThan( uint _notMoreThan ) public boardOnly {
@@ -76,19 +76,19 @@ contract PreICOToken is ERC20Token {
     count = holders.length;
   }
 
-  function issue(address to, uint256 amount) public ownerOnly validAddress(to) {
-    issueInternal( to, amount );
+  function issue(address to, uint256 amount) public boardOnly validAddress(to) {
+    issueInternal( to, amount, false );
   }
 
   function buy() public payable opened {
-    issueInternal( msg.sender, msg.value );
+    issueInternal( msg.sender, msg.value, true );
   }
 
   function withdraw( uint amount ) public boardOnly {
     board.transfer( amount );
   }
 
-  function issueInternal(address to, uint256 amount) internal {
+  function issueInternal(address to, uint256 amount, bool returnExcess) internal {
     uint tokens = amount / weiForToken;
     require( weiForToken > 0 && safeAdd(totalSupply, tokens) < tokensLimit && (balanceOf[to] < notMoreThan || notMoreThan == 0) && safeAdd(balanceOf[to], tokens) >= notLessThan );
     uint sendBack = 0;
@@ -101,13 +101,21 @@ contract PreICOToken is ERC20Token {
     balanceOf[to] = safeAdd(balanceOf[to], tokens);
     totalSupply = safeAdd(totalSupply, tokens);
     holders.push(to);
-    if( sendBack > 0 && sendBack < amount )
+    if( returnExcess && sendBack > 0 && sendBack < amount )
       to.transfer( sendBack );
-    Issuance(to, tokens, amount, sendBack);
+    Issuance(to, tokens, amount, returnExcess ? sendBack : 0);
     Transfer( this, to, tokens );
   }
 
+  function moveToRST() validAddress(rst) {
+    sendToRstForAddress( msg.sender );
+  }
+
   function sendToRST( address from ) validAddress(rst) {
+    sendToRstForAddress( from );
+  }
+
+  function sendToRstForAddress( address from ) internal {
     require( closed );
     uint amount = balanceOf[from];
     if( amount > 0 ) {
