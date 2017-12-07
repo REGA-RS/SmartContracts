@@ -32,6 +32,7 @@ contract VotingControllerBase is RSTBase {
   function voteAgainst() public;
   function startVoting() public;
   function stopVoting() public;
+  function getCurrentVotingDescription() public constant returns (bytes32 vd) ;
 }
 
 contract FeesControllerBase is RSTBase {

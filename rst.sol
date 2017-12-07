@@ -37,7 +37,6 @@ contract RiskSharingToken is RSTBase {
   }
 
   function setTokenController( TokenControllerBase tc, address _tokenData ) public boardOnly {
-    require(tokenController == address(0));
     tokenController = tc;
     if( _tokenData != address(0) )
       tokenData = _tokenData;
@@ -47,10 +46,12 @@ contract RiskSharingToken is RSTBase {
   }
 
 // Voting
-  function startVoting( VotingControllerBase vc ) public boardOnly {
-    require(votingController == address(0));
+  function setVotingController( VotingControllerBase vc ) public boardOnly {
     votingController = vc;
-    if( !vc.delegatecall(bytes4(sha3("startVoting()"))) )
+  }
+
+  function startVoting( bytes32 /*description*/ ) public boardOnly validAddress(votingController) {
+    if( !votingController.delegatecall(msg.data) )
       revert();
   }
 
@@ -59,12 +60,12 @@ contract RiskSharingToken is RSTBase {
       revert();
   }
 
-  function voteFor() public boardOnly validAddress(votingController) {
+  function voteFor() public validAddress(votingController) {
     if( !votingController.delegatecall(msg.data) )
       revert();
   }
 
-  function voteAgainst() public boardOnly validAddress(votingController) {
+  function voteAgainst() public validAddress(votingController) {
     if( !votingController.delegatecall(msg.data) )
       revert();
   }
