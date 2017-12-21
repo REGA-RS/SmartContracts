@@ -16,6 +16,11 @@ contract RSTBase is ERC20Token {
   uint32  public crr;         // per cent
   uint256 public weiForToken; // current rate
   uint8   public totalAccounts;
+
+  modifier boardOnly() {
+    require(msg.sender == board);
+    _;
+  }
 }
 
 contract TokenControllerBase is RSTBase {
@@ -36,5 +41,10 @@ contract VotingControllerBase is RSTBase {
 }
 
 contract FeesControllerBase is RSTBase {
-
+  function init() public;
+  function withdrawFee() public;
+  function calculateFee() public;
+  function addPayee( address payee ) public;
+  function removePayee( address payee ) public;
+  function setRepayment( ) payable public;
 }

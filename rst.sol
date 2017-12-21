@@ -10,6 +10,7 @@ contract RiskSharingToken is RSTBase {
 
   TokenControllerBase public tokenController;
   VotingControllerBase public votingController;
+  FeesControllerBase public feesController;
 
   modifier ownerOnly() {
     require( msg.sender == owner );
@@ -109,6 +110,37 @@ contract RiskSharingToken is RSTBase {
     }
   }
 
+  // fees operations
+
+  function setFeesController( FeesControllerBase fc ) public boardOnly {
+    feesController = fc;
+    if( !feesController.delegatecall(bytes4(sha3("init()"))) )
+      revert();
+  }
+
+  function withdrawFee() public validAddress(feesController) {
+      if( !feesController.delegatecall(msg.data) )
+        revert();
+  }
+
+  function calculateFee() public validAddress(feesController) {
+      if( !feesController.delegatecall(msg.data) )
+        revert();
+  }
+  function addPayee( address /*payee*/ ) public validAddress(feesController) {
+      if( !feesController.delegatecall(msg.data) )
+        revert();
+  }
+  function removePayee( address /*payee*/ ) public validAddress(feesController) {
+      if( !feesController.delegatecall(msg.data) )
+        revert();
+  }
+  function setRepayment( ) payable public validAddress(feesController) {
+      if( !feesController.delegatecall(msg.data) )
+        revert();
+  }
+
+  // internal functions
   function issueInternal( address holder, uint256 amount ) internal {
     reserve = safeAdd(reserve, amount * weiForToken * crr / 100);
     require( reserve <= this.balance );
